@@ -30,7 +30,7 @@ public class MessageController {
 
     }
 
-    private HashMap<String, String> getMessageById(@PathVariable String id) {
+    private HashMap<String, String> getMessageById(String id) {
         return messages.stream().filter(map -> map.get("id").equals(id))
                 .findFirst()
                 .orElseThrow(NotFoundException::new);
