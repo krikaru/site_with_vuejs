@@ -1,60 +1,55 @@
 package com.example.site_with_vuejs.controller;
 
-import com.example.site_with_vuejs.exceptions.NotFoundException;
+import com.example.site_with_vuejs.domain.Message;
+import com.example.site_with_vuejs.domain.Views;
+import com.example.site_with_vuejs.repo.MessageRepo;
+import com.fasterxml.jackson.annotation.JsonView;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("message")
 public class MessageController {
-    private int index = 4;
+    private final MessageRepo messageRepo;
 
-    private List<HashMap<String, String>> messages = new ArrayList<>(List.of(
-            new HashMap<>(Map.of("id", "1", "text", "message1")) ,
-            new HashMap<>(Map.of("id", "2", "text", "message2")),
-            new HashMap<>(Map.of("id", "3", "text", "message3"))
-    ));
+    public MessageController(MessageRepo messageRepo) {
+        this.messageRepo = messageRepo;
+    }
 
     @GetMapping
-    public List<HashMap<String, String>> list() {
-        return messages;
+    @JsonView(Views.IdName.class) //выводятся только поля, помеченные этой аннотацией, см. Message
+    public List<Message> list() {
+        return messageRepo.findAll();
     }
 
     @GetMapping("/{id}")
-    public Map<String, String> getOne(@PathVariable String id) {
-        return getMessageById(id);
-
-    }
-
-    private HashMap<String, String> getMessageById(String id) {
-        return messages.stream().filter(map -> map.get("id").equals(id))
-                .findFirst()
-                .orElseThrow(NotFoundException::new);
-    }
-
-    @PostMapping
-    public Map<String, String> create(@RequestBody Map<String, String> message) {
-        message.put("id", String.valueOf(index++));
-        messages.add(new HashMap<>(message));
+    @JsonView(Views.FullMessage.class)
+    public Message getOne(@PathVariable("id") Message message) {
         return message;
     }
 
+    @PostMapping
+    public Message create(@RequestBody Message message) {
+        message.setCreationDate(LocalDateTime.now());
+        return messageRepo.save(message);
+    }
+
     @PutMapping("/{id}")
-    public Map<String, String> update(@PathVariable String id, @RequestBody Map<String, String> message) {
-        HashMap<String, String> messageById = getMessageById(id);
-
-        messageById.putAll(message);
-        messageById.put("id", id);
-
-        return messageById;
+    public Message update(
+            @PathVariable("id") Message messageFromDb,
+            @RequestBody Message message
+            ) {
+        //скопировать все поля , кроме id
+        BeanUtils.copyProperties(message, messageFromDb, "id");
+        return messageRepo.save(messageFromDb);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) {
-        messages.remove(getMessageById(id));
+    public void delete(@PathVariable("id") Message message) {
+        messageRepo.delete(message);
     }
 }
