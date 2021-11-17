@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- версия для разработки, отображает полезные предупреждения в консоли -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+<!--    значения,которые через json будут передаваться от бэк на фронтенд сразуже при запросе страничке-->
+<!--    th:inline="javascript" - сообщаем таймлифу что подстановка контента будет происходить по требованию в строке и генерировать он должен js-->
+    <script th:inline="javascript">
+        var frontendData = [[${frontendData}]];
+    </script>
+</head>
+<body>
+<div id="app">
+
+</div>
+<script src="/js/main.js"></script>
+</body>
+</html>
