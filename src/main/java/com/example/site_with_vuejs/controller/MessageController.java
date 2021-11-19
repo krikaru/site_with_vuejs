@@ -5,6 +5,8 @@ import com.example.site_with_vuejs.domain.Views;
 import com.example.site_with_vuejs.repo.MessageRepo;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.BeanUtils;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -51,5 +53,13 @@ public class MessageController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") Message message) {
         messageRepo.delete(message);
+    }
+
+    //получение сообщений через вебсокеты. На этот мапинг приходят сообщения
+    @MessageMapping("/changeMessage")
+    //в какой топик мы складываем ответ. Топик - это канал, куда будут прилетать ответы от сервера и на который подписываются пользователи
+    @SendTo("/topic/activity")
+    public Message change(Message message) {
+        return messageRepo.save(message);
     }
 }
