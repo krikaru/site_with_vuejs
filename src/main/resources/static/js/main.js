@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import VueResource from 'vue-resource'
+import 'api/resource'
 import App from 'pages/App.vue'
 import { connect } from './util/ws'
 import Vuetify from "vuetify";
@@ -9,10 +9,6 @@ if(frontendData.profile) {
     connect()  //открытие сокета
 }
 
-
-
-//регистрируем vue-resource, дальше во всем приложении мы можем его использовать как поле экземпляра vue
-Vue.use(VueResource)
 Vue.use(Vuetify)
 
 new Vue({
