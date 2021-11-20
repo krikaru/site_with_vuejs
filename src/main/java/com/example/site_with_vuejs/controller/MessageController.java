@@ -38,6 +38,7 @@ public class MessageController {
     }
 
     @PostMapping
+//    @JsonView(Views.IdName.class) //через веб сокет мэппер не получает эту аннотацию!!!!!!!!!!!!
     public Message create(@RequestBody Message message) {
         message.setCreationDate(LocalDateTime.now());
         Message updatedMessage = messageRepo.save(message);

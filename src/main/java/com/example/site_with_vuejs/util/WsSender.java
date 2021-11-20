@@ -12,7 +12,9 @@ import java.util.function.BiConsumer;
 
 @Component
 public class WsSender {
+    //отвечает за отправку сообщений, через очереди сообщений в спринге
     private final SimpMessagingTemplate template;
+    //(де)/сериализует объект, определяет какие поля нужно отразить для аннотаций @JsonView
     private final ObjectMapper mapper;
 
     public WsSender(SimpMessagingTemplate template, ObjectMapper mapper) {
@@ -20,6 +22,8 @@ public class WsSender {
         this.mapper = mapper;
     }
 
+    //простое навешивание аннотации @JsonView на методы add, upd, del не поможет если мы используем сокеты, поэтому
+    //делаем это вручную .writerWithView(view);
     public <T> BiConsumer<EventType, T> getSender(ObjectType objectType, Class view) {
         ObjectWriter writer = mapper
                 .setConfig(mapper.getSerializationConfig())
