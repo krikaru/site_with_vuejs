@@ -11,7 +11,8 @@ export default new Vuex.Store({
         profile: frontendData.profile
     },
     getters: {
-        sortedMessages: state => state.messages.sort((a, b) => -(a.id - b.id))
+        //если меседжей нет, то возвращаем пустой массив
+        sortedMessages: state => (state.messages || []).sort((a, b) => -(a.id - b.id))
     },
     mutations: {
         addMessageMutation(state, message) {
