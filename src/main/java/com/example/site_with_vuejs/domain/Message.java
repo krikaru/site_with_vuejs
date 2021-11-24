@@ -1,7 +1,9 @@
 package com.example.site_with_vuejs.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
 import org.hibernate.Hibernate;
 
@@ -14,6 +16,11 @@ import java.util.List;
 @ToString(of = {"id", "text"})
 @EqualsAndHashCode(of = {"id"})
 @Data
+//для циклических зависимостей
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"
+)
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
