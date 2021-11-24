@@ -7,6 +7,7 @@ import org.hibernate.Hibernate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table
@@ -17,6 +18,7 @@ public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column
+
     @JsonView(Views.Id.class)
     private Long id;
     @Column
@@ -26,6 +28,15 @@ public class Message {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss") //формат отображения даты
     @JsonView(Views.FullMessage.class)
     private LocalDateTime creationDate;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @JsonView(Views.FullMessage.class)
+    private User author;
+
+    @OneToMany(mappedBy = "message", orphanRemoval = true) //orphanRemoval -если сообщение удаляется, то все коменты тоже
+    @JsonView(Views.FullMessage.class)
+    private List<Comment> comments;
 
     @JsonView(Views.FullMessage.class)
     private String link;

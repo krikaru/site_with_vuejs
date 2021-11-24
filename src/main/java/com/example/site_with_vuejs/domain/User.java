@@ -1,6 +1,7 @@
 package com.example.site_with_vuejs.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.*;
 import org.hibernate.Hibernate;
 
@@ -18,8 +19,11 @@ import java.time.LocalDateTime;
 public class User implements Serializable {
     //id получаем с гугл авторизации, поэтому ни какой generatedvalue не пишем. Приходят в формате STRING!!!!!
     @Id
+    @JsonView(Views.IdName.class)
     private String id;
+    @JsonView(Views.IdName.class)
     private String name;
+    @JsonView(Views.IdName.class)
     private String userpic;
     private String email;
     private String gender;

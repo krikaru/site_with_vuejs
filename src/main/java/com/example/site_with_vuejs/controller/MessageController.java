@@ -1,6 +1,7 @@
 package com.example.site_with_vuejs.controller;
 
 import com.example.site_with_vuejs.domain.Message;
+import com.example.site_with_vuejs.domain.User;
 import com.example.site_with_vuejs.domain.Views;
 import com.example.site_with_vuejs.dto.EventType;
 import com.example.site_with_vuejs.dto.MetaDto;
@@ -13,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -53,9 +55,13 @@ public class MessageController {
 
     @PostMapping
 //    @JsonView(Views.IdName.class) //через веб сокет мэппер не получает эту аннотацию!!!!!!!!!!!!
-    public Message create(@RequestBody Message message) throws IOException {
+    public Message create(
+            @RequestBody Message message,
+            @AuthenticationPrincipal User user
+            ) throws IOException {
         message.setCreationDate(LocalDateTime.now());
         fillMeta(message);
+        message.setAuthor(user);
         Message updatedMessage = messageRepo.save(message);
 
         wsSender.accept(EventType.CREATE, updatedMessage);
