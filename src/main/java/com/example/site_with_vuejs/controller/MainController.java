@@ -2,11 +2,14 @@ package com.example.site_with_vuejs.controller;
 
 import com.example.site_with_vuejs.domain.User;
 import com.example.site_with_vuejs.domain.Views;
-import com.example.site_with_vuejs.repo.MessageRepo;
+import com.example.site_with_vuejs.dto.MessagePageDto;
+import com.example.site_with_vuejs.service.MessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,14 +21,14 @@ import java.util.HashMap;
 @Controller
 @RequestMapping("/")
 public class MainController {
-    private final MessageRepo messageRepo;
+    private final MessageService messageService;
 
     @Value("${spring.profiles.active}")
     private String profile;
     private final ObjectWriter writer;
 
-    public MainController(MessageRepo messageRepo, ObjectMapper mapper) {
-        this.messageRepo = messageRepo;
+    public MainController(MessageService messageService, ObjectMapper mapper) {
+        this.messageService = messageService;
         this.writer = mapper
                 .setConfig(mapper.getSerializationConfig())
                 .writerWithView(Views.FullMessage.class);
@@ -39,8 +42,16 @@ public class MainController {
 
         if (user != null) {
             data.put("profile", user);
-            String messages = writer.writeValueAsString(messageRepo.findAll());
+
+            Sort sort = Sort.by(Sort.Direction.DESC, "id");
+            PageRequest pageRequest = PageRequest.of(0, MessageController.MESSAGES_PER_PAGE, sort);
+            MessagePageDto messagePageDto = messageService.findAll(pageRequest);
+
+            String messages = writer.writeValueAsString(messagePageDto.getMessages());
+
             model.addAttribute("messages", messages);
+            data.put("currentPage", messagePageDto.getCurrentPage());
+            data.put("totalPages", messagePageDto.getTotalPages());
         } else {
             model.addAttribute("messages", "[]");
         }
