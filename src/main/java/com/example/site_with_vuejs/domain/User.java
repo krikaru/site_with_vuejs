@@ -1,21 +1,20 @@
 package com.example.site_with_vuejs.domain;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import org.hibernate.Hibernate;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "usr")
-@Getter
-@Setter
-@ToString
+@Data
+@EqualsAndHashCode(of = {" id "})
+@ToString(of = {"id", "name"})
 public class User implements Serializable {
     //id получаем с гугл авторизации, поэтому ни какой generatedvalue не пишем. Приходят в формате STRING!!!!!
     @Id
@@ -26,22 +25,26 @@ public class User implements Serializable {
     @JsonView(Views.IdName.class)
     private String userpic;
     private String email;
+    @JsonView(Views.FullProfile.class)
     private String gender;
+    @JsonView(Views.FullProfile.class)
     private String locale;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss") //формат отображения даты
+    @JsonView(Views.FullProfile.class)
     private LocalDateTime lastVisit;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        User user = (User) o;
+    @JsonView(Views.FullProfile.class)
+    @OneToMany(
+            mappedBy = "subscriber",
+            orphanRemoval = true
+    )
+    private Set<UserSubscription> subscriptions = new HashSet<>();
 
-        return id != null && id.equals(user.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
+    @JsonView(Views.FullProfile.class)
+    @OneToMany(
+            mappedBy = "channel",
+            orphanRemoval = true,
+            cascade = CascadeType.ALL
+    )
+    private Set<UserSubscription> subscribers= new HashSet<>();
 }

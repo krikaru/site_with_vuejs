@@ -2,12 +2,14 @@ package com.example.site_with_vuejs.service;
 
 import com.example.site_with_vuejs.domain.Message;
 import com.example.site_with_vuejs.domain.User;
+import com.example.site_with_vuejs.domain.UserSubscription;
 import com.example.site_with_vuejs.domain.Views;
 import com.example.site_with_vuejs.dto.EventType;
 import com.example.site_with_vuejs.dto.MessagePageDto;
 import com.example.site_with_vuejs.dto.MetaDto;
 import com.example.site_with_vuejs.dto.ObjectType;
 import com.example.site_with_vuejs.repo.MessageRepo;
+import com.example.site_with_vuejs.repo.UserSubscriptionRepo;
 import com.example.site_with_vuejs.util.WsSender;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,9 +22,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageService {
@@ -33,10 +37,14 @@ public class MessageService {
     private static Pattern IMG_REGEX = Pattern.compile(IMAGE_PATTERN, Pattern.CASE_INSENSITIVE);
 
     private final MessageRepo messageRepo;
+    private final UserSubscriptionRepo userSubscriptionRepo;
     private final BiConsumer<EventType, Message> wsSender;
 
-    public MessageService(MessageRepo messageRepo, WsSender wsSender) {
+    public MessageService(MessageRepo messageRepo,
+                          UserSubscriptionRepo userSubscriptionRepo,
+                          WsSender wsSender) {
         this.messageRepo = messageRepo;
+        this.userSubscriptionRepo = userSubscriptionRepo;
         this.wsSender = wsSender.getSender(ObjectType.MESSAGE, Views.IdName.class);
     }
 
@@ -105,8 +113,15 @@ public class MessageService {
         return updatedMessage;
     }
 
-    public MessagePageDto findAll(Pageable pageable) {
-        Page<Message> page = messageRepo.findAll(pageable);
+    public MessagePageDto findForUser(Pageable pageable, User user) {
+        List<User> channels = userSubscriptionRepo.findBySubscriber(user)
+                .stream()
+                .filter(UserSubscription::isActive)
+                .map(UserSubscription::getChannel)
+                .collect(Collectors.toList());
+        channels.add(user);
+
+        Page<Message> page = messageRepo.findByAuthorIn(channels, pageable);
         return new MessagePageDto(
                 page.getContent(),
                 pageable.getPageNumber(),
