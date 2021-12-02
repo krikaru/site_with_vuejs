@@ -8,7 +8,7 @@ import store from "store/store";
 import { connect } from './util/ws'
 import 'vuetify/dist/vuetify.min.css' //подключаем стили
 
-if(frontendData.profile) {
+if(profile) {
     connect()  //открытие сокета
 }
 
